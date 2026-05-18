@@ -1,0 +1,2 @@
+from .department_repository import IDepartmentRepository
+from .employee_repository import IEmployeeRepository

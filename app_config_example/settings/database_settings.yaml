@@ -1,0 +1,12 @@
+host: db
+port: 5432
+user: org_api_app
+db_name: database
+db_schema: org_api_app_schema
+connection:
+    pool_pre_ping: true
+    pool_recycle: 1800
+    pool_timeout: 30
+    pool_size: 20
+    max_overflow: 10
+    timeout: 10

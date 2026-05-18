@@ -1,0 +1,58 @@
+services:
+    db:
+        image: postgres:18-alpine
+        container_name: postgres
+        restart: unless-stopped
+        env_file:
+            - app_config/db.env
+        environment:
+            POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+        volumes:
+            - org_api_db_data:/var/lib/postgresql/data
+            - ./init_database.sh:/docker-entrypoint-initdb.d/init.sh
+        secrets:
+            - db_password
+            - org_api_app_db_password
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+            interval: 5s
+            timeout: 3s
+            retries: 5
+            start_period: 10s
+
+    migration:
+        image: org-api-app:v1
+        container_name: db_migration
+        volumes:
+            - ./app_config/settings:/etc/org_api_app/settings
+        secrets:
+            - org_api_app_db_password
+        depends_on:
+            db:
+                condition: service_healthy
+        command: ["alembic", "upgrade", "head"]
+
+    org_api:
+        image: org-api-app:v1
+        container_name: org_api_app
+        volumes:
+            - ./app_config/settings:/etc/org_api_app/settings
+        depends_on:
+            db:
+                condition: service_healthy
+            migration:
+                condition: service_completed_successfully
+        secrets:
+            - org_api_app_db_password
+        ports:
+            - "8000:8000"
+
+
+secrets:
+    db_password:
+        file: app_config/db_password
+    org_api_app_db_password:
+        file: app_config/org_api_app_db_password
+
+volumes:
+    org_api_db_data:

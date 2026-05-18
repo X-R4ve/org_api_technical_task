@@ -1,0 +1,1 @@
+docker build -t org-api-app:v1 .

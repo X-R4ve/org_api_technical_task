@@ -1,0 +1,2 @@
+from .delete_department import DeleteDepartmentUseCase
+from .get_department import GetDepartmentUseCase
